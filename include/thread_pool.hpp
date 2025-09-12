@@ -1,6 +1,10 @@
-#pragma once
+#ifndef THREAD_POOL_HPP
+#define THREAD_POOL_HPP
+
+#include <atomic>
 #include <condition_variable>
 #include <functional>
+#include <future>
 #include <mutex>
 #include <queue>
 #include <thread>
@@ -8,23 +12,20 @@
 
 class ThreadPool {
 public:
-  ThreadPool(size_t threads);
+  explicit ThreadPool(size_t numThreads);
   ~ThreadPool();
 
-  template <class F> void enqueue(F f) {
-    {
-      std::unique_lock<std::mutex> lock(queue_mutex);
-      tasks.emplace(std::function<void()>(f));
-    }
-    condition.notify_one();
-  }
+  template <class F, class... Args>
+  auto enqueue(F &&f, Args &&...args)
+      -> std::future<typename std::result_of<F(Args...)>::type>;
 
 private:
   std::vector<std::thread> workers;
   std::queue<std::function<void()>> tasks;
 
-  std::mutex queue_mutex;
+  std::mutex queueMutex;
   std::condition_variable condition;
-  bool stop;
+  std::atomic<bool> stop;
 };
 
+#endif

@@ -1,56 +1,55 @@
-#include "config.hpp"
-#include "renderer.hpp"
 #include "thread_pool.hpp"
 #include <filesystem>
 #include <iostream>
+#include <string>
+#include <vector>
 
 namespace fs = std::filesystem;
 
-int main(int argc, char **argv) {
-  if (argc < 7) {
-    std::cerr
-        << "Uso: " << argv[0]
-        << " <directorio con *.xy> nthreads xmin xmax ymin ymax [margin]\n";
-    std::cerr << "Ejemplo: " << argv[0] << " ./frames 8 -10 10 -5 30 0.05\n";
-    return 1;
-  }
+int main(int argc, char *argv[]) {
+  std::string inputDir = ".";
+  std::string property = "pressure"; // valor por defecto
 
-  std::string dir = argv[1];
-  int nthreads = std::stoi(argv[2]);
-  double xmin = std::stod(argv[3]);
-  double xmax = std::stod(argv[4]);
-  double ymin = std::stod(argv[5]);
-  double ymax = std::stod(argv[6]);
-
-  // margen opcional
-  double margin = DEFAULT_MARGIN;
-  if (argc >= 8) {
-    margin = std::stod(argv[7]);
-    if (margin < 0)
-      margin = 0.0; // no permitir margen negativo
-  }
-
-  // número de hilos
-  if (nthreads <= 0) {
-    nthreads = std::thread::hardware_concurrency();
-    if (nthreads == 0)
-      nthreads = 2;
-  }
-
-  ThreadPool pool(nthreads);
-
-  for (auto &entry : fs::directory_iterator(dir)) {
-    if (entry.path().extension() == ".xy") {
-      std::string inputFile = entry.path().string();
-      auto outPath = entry.path();
-      outPath.replace_extension(".png");
-      std::string outputFile = outPath.string();
-
-      pool.enqueue([=]() {
-        renderFile(inputFile, outputFile, DEFAULT_WIDTH, DEFAULT_HEIGHT, xmin,
-                   xmax, ymin, ymax, margin);
-      });
+  for (int i = 1; i < argc; i++) {
+    std::string arg = argv[i];
+    if (arg == "--dir" && i + 1 < argc) {
+      inputDir = argv[++i];
+    } else if (arg == "--property" && i + 1 < argc) {
+      property = argv[++i];
+    } else if (arg == "--help") {
+      std::cout << "Uso: " << argv[0]
+                << " [--dir directorio] [--property propiedad]\n";
+      return 0;
     }
+  }
+
+  std::cout << "Directorio: " << inputDir << "\n";
+  std::cout << "Propiedad: " << property << "\n";
+
+  // Inicializar thread pool con #hilos = #cores
+  size_t numThreads = std::thread::hardware_concurrency();
+  ThreadPool pool(numThreads);
+
+  std::vector<std::future<void>> futures;
+
+  // Recorremos archivos .xy
+  for (const auto &entry : fs::directory_iterator(inputDir)) {
+    if (entry.path().extension() == ".xy") {
+      std::string xyFile = entry.path().string();
+
+      // Nombre del archivo .sxy apareado
+      std::string sxyFile = xyFile.substr(0, xyFile.size() - 3) + "sxy";
+
+      futures.push_back(pool.enqueue([xyFile, sxyFile, property] {
+        // ⬇️ Aquí luego usaremos Renderer
+        std::cout << "Procesando: " << xyFile << " con " << sxyFile
+                  << " (propiedad = " << property << ")\n";
+      }));
+    }
+  }
+
+  for (auto &f : futures) {
+    f.get();
   }
 
   return 0;
