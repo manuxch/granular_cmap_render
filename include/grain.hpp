@@ -1,50 +1,60 @@
 #pragma once
-#include "colormap_renderer.hpp" // para usar Color
-#include <utility>
 #include <vector>
+#include <memory>
+#include <cairo.h>
 
-// Clase base abstracta
+// Estructura de color
+struct Color {
+    double r, g, b;
+};
+
+// Clase abstracta base
 class Grain {
 protected:
-  int gID;
-  int nv; // número de vértices (1 = círculo)
-  int type;
-
+    int gID;
+    int nv;
+    int type;
 public:
-  Grain(int id, int nVertices, int t) : gID(id), nv(nVertices), type(t) {}
-  virtual ~Grain() = default;
+    Grain(int gID, int nv, int type) : gID(gID), nv(nv), type(type) {}
+    virtual ~Grain() = default;
 
-  int getID() const { return gID; }
-  int getNv() const { return nv; }
-  int getType() const { return type; }
+    int getID() const { return gID; }
+    int getType() const { return type; }
 
-  // Render genérico (cada derivada lo implementa)
-  virtual void render(const Color &c) const = 0;
+    // Render polimórfico
+    virtual void render(cairo_t* cr, const Color& c,
+                        double scale, double offsetX, double offsetY) const = 0;
 };
 
-// -----------------------------
-// Círculo (nv = 1)
-// -----------------------------
+// -----------------------------------------------------------------
+// Grano circular
+// -----------------------------------------------------------------
 class CircleGrain : public Grain {
-  double x, y, r;
-
+    double x, y, r;
 public:
-  CircleGrain(int id, double cx, double cy, double radius, int t)
-      : Grain(id, 1, t), x(cx), y(cy), r(radius) {}
+    CircleGrain(int gID, int type, double x, double y, double r)
+        : Grain(gID, 1, type), x(x), y(y), r(r) {}
 
-  void render(const Color &c) const override;
+    void render(cairo_t* cr, const Color& c,
+                double scale, double offsetX, double offsetY) const override;
 };
 
-// -----------------------------
-// Polígono (nv > 1)
-// -----------------------------
+// -----------------------------------------------------------------
+// Grano poligonal
+// -----------------------------------------------------------------
 class PolygonGrain : public Grain {
-  std::vector<std::pair<double, double>> vertices;
-
+    std::vector<std::pair<double,double>> vertices;
 public:
-  PolygonGrain(int id, const std::vector<std::pair<double, double>> &verts,
-               int t)
-      : Grain(id, verts.size(), t), vertices(verts) {}
+    PolygonGrain(int gID, int nv, int type,
+                 const std::vector<std::pair<double,double>>& vertices)
+        : Grain(gID, nv, type), vertices(vertices) {}
 
-  void render(const Color &c) const override;
+    void render(cairo_t* cr, const Color& c,
+                double scale, double offsetX, double offsetY) const override;
 };
+
+// -----------------------------------------------------------------
+// Función de lectura de archivo .xy
+// -----------------------------------------------------------------
+std::unordered_map<int, std::unique_ptr<Grain>> readGrainsFromFile(const std::string& filename);
+
