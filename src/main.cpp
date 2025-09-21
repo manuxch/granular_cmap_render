@@ -127,7 +127,7 @@ int main(int argc, char* argv[]) {
 
         std::string xyFile = path.string();
         std::string base = xyFile.substr(0, xyFile.size() - 3); // remove .xy
-        std::string sxyFile = base + "sxy";
+        std::string sxyFile = base + ".sxy";
         std::string filenameOnly = path.filename().string();
         std::string outFile = fs::path(outputDir) / (path.stem().string() + ".png");
 
