@@ -13,7 +13,6 @@
 #include "parser.hpp"
 #include "renderer.hpp"
 #include "colormap.hpp"      // viridis(), inferno(), RdYlBu(), ...
-// #include "colormaps.hpp"  // si usás otra versión, adaptá
 
 namespace fs = std::filesystem;
 
@@ -65,6 +64,10 @@ int main(int argc, char* argv[]) {
     int width = 1000;
     int height = 1000;
     double margin = 40.0; // pixels
+    double xmin = -10.0;
+    double xmax = 10.0;
+    double ymin = -10.0;
+    double ymax = 20.0;
 
     // Simple argv parsing
     for (int i = 1; i < argc; ++i) {
@@ -77,10 +80,17 @@ int main(int argc, char* argv[]) {
         else if ((a == "--width") && i + 1 < argc) { width = std::stoi(argv[++i]); }
         else if ((a == "--height") && i + 1 < argc) { height = std::stoi(argv[++i]); }
         else if ((a == "--margin") && i + 1 < argc) { margin = std::stod(argv[++i]); }
-        else if (a == "--help" || a == "-h") {
+        else if ((a == "--xylims") && (i + 4 < argc)) {
+            xmin = std::stod(argv[++i]);
+            xmax = std::stod(argv[++i]);
+            ymin = std::stod(argv[++i]);
+            ymax = std::stod(argv[++i]);
+        }
+        else if ((a == "--help" || a == "-h") || (argc < 1))  {
             std::cout << "Usage: " << argv[0] << " [--dir <input_dir>] [--property <name>]\n"
                       << "       [--cmap <viridis|inferno|RdYlBu>] [--config <file>]\n"
-                      << "       [--out <out_dir>] [--width <px>] [--height <px>] [--margin <px>]\n";
+                      << "       [--out <out_dir>] [--width <px>] [--height <px>] [--margin <px>]\n"
+                      << "       [--xylims xmin xmax ymin ymax]\n";
             return 0;
         }
     }
@@ -108,6 +118,7 @@ int main(int argc, char* argv[]) {
     std::cout << "Property  : " << property << "\n";
     std::cout << "Colormap  : " << cmapName << "\n";
     std::cout << "Image     : " << width << "x" << height << " (margin " << margin << " px)\n";
+    std::cout << "Límites   : " << xmin << " " << xmax << " " << ymin << " " << ymax << " (s.u. - m)\n";
 
     // choose colormap
     Colormap cmap = chooseColormap(cmapName);
@@ -132,7 +143,8 @@ int main(int argc, char* argv[]) {
         std::string outFile = fs::path(outputDir) / (path.stem().string() + ".png");
 
         // enqueue job
-        futures.push_back(pool.enqueue([xyFile, sxyFile, outFile, property, width, height, margin, cmap]() mutable {
+        futures.push_back(pool.enqueue([xyFile, sxyFile, outFile, property, width, height, margin, cmap,
+                                        xmin, xmax, ymin, ymax]() mutable {
             try {
                 // Check sxy exists
                 if (!fs::exists(sxyFile)) {
@@ -169,7 +181,7 @@ int main(int argc, char* argv[]) {
 
                 // Create renderer and render
                 Renderer renderer(width, height, margin);
-                renderer.renderToPNG(outFile, grains, vmin, vmax, cmap);
+                renderer.renderToPNG(outFile, grains, vmin, vmax, xmin, xmax, ymin, ymax, cmap);
 
                 std::cout << "[OK] " << outFile << "\n";
             } catch (const std::exception &e) {

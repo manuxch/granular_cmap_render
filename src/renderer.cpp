@@ -10,6 +10,7 @@ Renderer::Renderer(int width, int height, double margin)
 void Renderer::renderToPNG(const std::string& filename,
                            const std::vector<std::unique_ptr<Grain>>& grains,
                            double vmin, double vmax,
+                           double xmin, double xmax, double ymin, double ymax,
                            const Colormap& cmap) {
     // Crear superficie Cairo
     cairo_surface_t* surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width_, height_);
@@ -20,13 +21,13 @@ void Renderer::renderToPNG(const std::string& filename,
     cairo_paint(cr);
 
     // Escalas: determinamos bounding box de granos
-    double xmin = 1e9, xmax = -1e9, ymin = 1e9, ymax = -1e9;
-    for (const auto& g : grains) {
-        xmin = std::min(xmin, g->xmin());
-        xmax = std::max(xmax, g->xmax());
-        ymin = std::min(ymin, g->ymin());
-        ymax = std::max(ymax, g->ymax());
-    }
+    /*double xmin = 1e9, xmax = -1e9, ymin = 1e9, ymax = -1e9;*/
+    /*for (const auto& g : grains) {*/
+    /*    xmin = std::min(xmin, g->xmin());*/
+    /*    xmax = std::max(xmax, g->xmax());*/
+    /*    ymin = std::min(ymin, g->ymin());*/
+    /*    ymax = std::max(ymax, g->ymax());*/
+    /*}*/
 
     double scaleX = (width_ - 2*margin_) / (xmax - xmin);
     double scaleY = (height_ - 2*margin_) / (ymax - ymin);

@@ -12,6 +12,7 @@ public:
     void renderToPNG(const std::string& filename,
                      const std::vector<std::unique_ptr<Grain>>& grains,
                      double vmin, double vmax,
+                     double xmin, double xmax, double ymin, double ymax,
                      const Colormap& cmap);
 
 private:
