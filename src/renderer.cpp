@@ -1,8 +1,8 @@
-#include "renderer.hpp"
-#include "colormap.hpp"
 #include <cairo/cairo.h>
 #include <algorithm>
 
+#include "renderer.hpp"
+#include "colormap.hpp"
 
 Renderer::Renderer(int width, int height, double margin)
     : width_(width), height_(height), margin_(margin) {}
@@ -20,33 +20,39 @@ void Renderer::renderToPNG(const std::string& filename,
     cairo_set_source_rgb(cr, 1, 1, 1);
     cairo_paint(cr);
 
-    // Escalas: determinamos bounding box de granos
-    /*double xmin = 1e9, xmax = -1e9, ymin = 1e9, ymax = -1e9;*/
-    /*for (const auto& g : grains) {*/
-    /*    xmin = std::min(xmin, g->xmin());*/
-    /*    xmax = std::max(xmax, g->xmax());*/
-    /*    ymin = std::min(ymin, g->ymin());*/
-    /*    ymax = std::max(ymax, g->ymax());*/
-    /*}*/
+    // Calcular márgenes absolutos basados en porcentaje
+    double margin_pixels = margin_ * std::min(width_, height_); // margin_ es porcentaje (ej: 0.1 para 10%)
 
-    double scaleX = (width_ - 2*margin_) / (xmax - xmin);
-    double scaleY = (height_ - 2*margin_) / (ymax - ymin);
+    // Calcular área disponible para el dibujo
+    double available_width = width_ - 2 * margin_pixels;
+    double available_height = height_ - 2 * margin_pixels;
+
+    // Calcular escalas manteniendo relación de aspecto
+    double scaleX = available_width / (xmax - xmin);
+    double scaleY = available_height / (ymax - ymin);
     double scale = std::min(scaleX, scaleY);
 
-    // Función para convertir coordenadas físicas a pantalla
+    // Calcular offsets para centrar
+    double offsetX = 0, offsetY = 0;
+    if (scaleX > scaleY) {
+        // Espacio sobrante a los lados (formato horizontal)
+        offsetX = (width_ - 2 * margin_pixels - (xmax - xmin) * scale) / 2;
+    } else {
+        // Espacio sobrante arriba/abajo (formato vertical)
+        offsetY = (height_ - 2 * margin_pixels - (ymax - ymin) * scale) / 2;
+    }
+
+    // Función para convertir coordenadas físicas a pantalla (CENTRADO)
     auto toScreen = [&](double x, double y) {
-        double sx = margin_ + (x - xmin) * scale;
-        double sy = height_ - margin_ - (y - ymin) * scale;
+        double sx = margin_pixels + offsetX + (x - xmin) * scale;
+        double sy = height_ - margin_pixels - offsetY - (y - ymin) * scale;
         return std::make_pair(sx, sy);
     };
+
 
     // Dibujar granos
     for (const auto& g : grains) {
         double value = g->scalar();
-        // double t = (value - vmin) / (vmax - vmin);
-        // if (t < 0) t = 0;
-        // if (t > 1) t = 1;
-        // Color col = cmap(t);
         std::array<double, 3> col = cmap(value, vmin, vmax);
 
         cairo_set_source_rgb(cr, col[0], col[1], col[2]);

@@ -80,7 +80,7 @@ int main(int argc, char* argv[]) {
         else if ((a == "--width") && i + 1 < argc) { width = std::stoi(argv[++i]); }
         else if ((a == "--height") && i + 1 < argc) { height = std::stoi(argv[++i]); }
         else if ((a == "--margin") && i + 1 < argc) { margin = std::stod(argv[++i]); }
-        else if ((a == "--xylims") && (i + 4 < argc)) {
+        else if ((a == "--xylimits" || a == "-xyl") && (i + 4 < argc)) {
             xmin = std::stod(argv[++i]);
             xmax = std::stod(argv[++i]);
             ymin = std::stod(argv[++i]);
@@ -90,7 +90,7 @@ int main(int argc, char* argv[]) {
             std::cout << "Usage: " << argv[0] << " [--dir <input_dir>] [--property <name>]\n"
                       << "       [--cmap <viridis|inferno|RdYlBu>] [--config <file>]\n"
                       << "       [--out <out_dir>] [--width <px>] [--height <px>] [--margin <px>]\n"
-                      << "       [--xylims xmin xmax ymin ymax]\n";
+                      << "       [--xylimits xmin xmax ymin ymax]\n";
             return 0;
         }
     }
@@ -104,6 +104,10 @@ int main(int argc, char* argv[]) {
     if (cfg.count("height")) height = std::stoi(cfg["height"]);
     if (cfg.count("margin")) margin = std::stod(cfg["margin"]);
     if (cfg.count("property")) property = cfg["property"];
+    if (cfg.count("x_min")) xmin = std::stod(cfg["x_min"]);
+    if (cfg.count("x_max")) xmax = std::stod(cfg["x_max"]);
+    if (cfg.count("y_min")) ymin = std::stod(cfg["y_min"]);
+    if (cfg.count("y_max")) ymax = std::stod(cfg["y_max"]);
 
     // Make output dir if needed
     try {
