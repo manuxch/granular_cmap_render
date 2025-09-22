@@ -48,6 +48,12 @@ static Colormap chooseColormap(const std::string& name) {
     if (name == "viridis") return viridis();
     if (name == "inferno")  return inferno();
     if (name == "RdYlBu")   return RdYlBu();
+    if (name == "Greens")   return Greens();
+    if (name == "Reds")     return Reds();
+    if (name == "winter")   return winter();
+    if (name == "autumn")   return autumn();
+    if (name == "Blues")    return Blues();
+    if (name == "hot")      return hot();
     // default
     std::cerr << "[WARN] Colormap '" << name << "' no reconocido. Usando viridis.\n";
     return viridis();
@@ -88,7 +94,8 @@ int main(int argc, char* argv[]) {
         }
         else if ((a == "--help" || a == "-h") || (argc < 1))  {
             std::cout << "Usage: " << argv[0] << " [--dir <input_dir>] [--property <name>]\n"
-                      << "       [--cmap <viridis|inferno|RdYlBu>] [--config <file>]\n"
+                      << "       [--cmap <viridis|inferno|RdYlBu|Greens|Reds|winter|autumn|blues|hot>]\n"
+                      << "       [--config <file>]\n"
                       << "       [--out <out_dir>] [--width <px>] [--height <px>] [--margin <px>]\n"
                       << "       [--xylimits xmin xmax ymin ymax]\n";
             return 0;
