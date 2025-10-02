@@ -1,4 +1,5 @@
 #include "grain.hpp"
+#include <iostream>
 
 // ---------------- CircleGrain ----------------
 CircleGrain::CircleGrain(int gid, int type, double x, double y, double r, double scalar)
@@ -10,6 +11,7 @@ void CircleGrain::render(cairo_t* cr,
     auto [sx, sy] = toScreen(x_, y_);
     double sr = r_ * scale;
 
+    std::cerr << "Grain at " << x_ << " " << y_ << " -> " << sx << " " << sy << ", r= " << sr << std::endl;
     cairo_arc(cr, sx, sy, sr, 0, 2 * std::numbers::pi);
     cairo_fill(cr);
 }
