@@ -55,7 +55,7 @@ void Renderer::renderToPNG(const std::string& filename,
     // Dibujar granos
     for (const auto& g : grains) {
         double value = g->scalar();
-        std::array<double, 3> col = cmap(value, valmin_, valmax_);
+        std::array<double, 3> col = cmap(value, valmin_, valmax);
         // std::array<double, 3> col = cmap(value, vmin, vmax);
 
         cairo_set_source_rgb(cr, col[0], col[1], col[2]);
