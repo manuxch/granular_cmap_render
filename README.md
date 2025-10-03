@@ -18,7 +18,7 @@ Este script genera el directorio `build/`, y construye allí el ejecutable.
        [--config <file>]
        [--out <out_dir>] [--width <px>] [--height <px>] [--margin <px>]
        [--xylimits xmin xmax ymin ymax]
-
+       [--valmin valmin] [--valmax valmax]
 ```
 
 donde:
@@ -40,6 +40,9 @@ donde:
   - `xmax = 10.0`
   - `ymin = -10.0`
   - `ymax = 20.0`
+- `valmin` y `valmax` son los valores extremos a representar en el mapa de calor. Los valores por defecto son:
+  - `valmin = 0.0`
+  - `valmax = 1.0`
 
 Ejemplo:
 

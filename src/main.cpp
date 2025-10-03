@@ -74,6 +74,8 @@ int main(int argc, char* argv[]) {
     double xmax = 10.0;
     double ymin = -10.0;
     double ymax = 20.0;
+    double valmin = 0.0;
+    double valmax = 1.0;
 
     // Simple argv parsing
     for (int i = 1; i < argc; ++i) {
@@ -86,6 +88,8 @@ int main(int argc, char* argv[]) {
         else if ((a == "--width") && i + 1 < argc) { width = std::stoi(argv[++i]); }
         else if ((a == "--height") && i + 1 < argc) { height = std::stoi(argv[++i]); }
         else if ((a == "--margin") && i + 1 < argc) { margin = std::stod(argv[++i]); }
+        else if ((a == "--valmin") && i + 1 < argc) { valmin = std::stod(argv[++i]); }
+        else if ((a == "--valmax") && i + 1 < argc) { valmax = std::stod(argv[++i]); }
         else if ((a == "--xylimits" || a == "-xyl") && (i + 4 < argc)) {
             xmin = std::stod(argv[++i]);
             xmax = std::stod(argv[++i]);
@@ -97,7 +101,8 @@ int main(int argc, char* argv[]) {
                       << "       [--cmap <viridis|inferno|RdYlBu|Greens|Reds|winter|autumn|blues|hot>]\n"
                       << "       [--config <file>]\n"
                       << "       [--out <out_dir>] [--width <px>] [--height <px>] [--margin <px>]\n"
-                      << "       [--xylimits xmin xmax ymin ymax]\n";
+                      << "       [--xylimits xmin xmax ymin ymax]\n"
+                      << "       [--valmin <valmin>] [--valmax valmax]\n";
             return 0;
         }
     }
@@ -115,6 +120,8 @@ int main(int argc, char* argv[]) {
     if (cfg.count("x_max")) xmax = std::stod(cfg["x_max"]);
     if (cfg.count("y_min")) ymin = std::stod(cfg["y_min"]);
     if (cfg.count("y_max")) ymax = std::stod(cfg["y_max"]);
+    if (cfg.count("val_min")) valmin = std::stod(cfg["val_min"]);
+    if (cfg.count("val_max")) valmax = std::stod(cfg["val_max"]);
 
     // Make output dir if needed
     try {
@@ -129,7 +136,8 @@ int main(int argc, char* argv[]) {
     std::cout << "Property  : " << property << "\n";
     std::cout << "Colormap  : " << cmapName << "\n";
     std::cout << "Image     : " << width << "x" << height << " (margin " << margin << " px)\n";
-    std::cout << "Límites   : " << xmin << " " << xmax << " " << ymin << " " << ymax << " (s.u. - m)\n";
+    std::cout << "Límites xy: " << xmin << " " << xmax << " " << ymin << " " << ymax << " (s.u. - m)\n";
+    std::cout << "Rango vals: " << valmin << " " << valmax << "\n";
 
     // choose colormap
     Colormap cmap = chooseColormap(cmapName);
@@ -155,7 +163,7 @@ int main(int argc, char* argv[]) {
 
         // enqueue job
         futures.push_back(pool.enqueue([xyFile, sxyFile, outFile, property, width, height, margin, cmap,
-                                        xmin, xmax, ymin, ymax]() mutable {
+                                        xmin, xmax, ymin, ymax, valmin, valmax]() mutable {
             try {
                 // Check sxy exists
                 if (!fs::exists(sxyFile)) {
@@ -191,7 +199,7 @@ int main(int argc, char* argv[]) {
                 }
 
                 // Create renderer and render
-                Renderer renderer(width, height, margin);
+                Renderer renderer(width, height, margin, valmin, valmax);
                 renderer.renderToPNG(outFile, grains, vmin, vmax, xmin, xmax, ymin, ymax, cmap);
 
                 std::cout << "[OK] " << outFile << "\n";

@@ -73,3 +73,21 @@ private:
     std::vector<std::pair<double,double>> vertices_;
 };
 
+class BorderGrain : public Grain {
+  public:
+    BorderGrain(int gid, int type, 
+                const std::vector<std::pair<double, double>>& vertices,
+                double scalar);   // scalar = -1 for walls -> color BLACK
+    
+    void render (cairo_t* cr, 
+                  const TransformFunc& toScreen,
+                  double scale) const override;
+
+    double xmin() const override;
+    double xmax() const override;
+    double ymin() const override;
+    double ymax() const override;
+
+  private:
+    std::vector<std::pair<double, double>> vertices_;
+};

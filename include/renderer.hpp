@@ -7,7 +7,7 @@
 
 class Renderer {
 public:
-    Renderer(int width, int height, double margin);
+    Renderer(int width, int height, double margin, double valmin, double valmax);
 
     void renderToPNG(const std::string& filename,
                      const std::vector<std::unique_ptr<Grain>>& grains,
@@ -19,5 +19,7 @@ private:
     int width_;
     int height_;
     double margin_;
+    double valmin_;
+    double valmax_;
 };
 

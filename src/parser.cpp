@@ -72,16 +72,25 @@ Parser::readXY(const std::string &filename,
     if (line.empty() || line[0] == '#')
       continue;
     std::istringstream iss(line);
+    double scalar = 0.0;
 
     int gid, nvert, type;
     iss >> gid >> nvert;
 
     if (gid < 0) {
       // Polígono especial BOX, lo ignoramos por ahora
-      continue;
+      std::vector<std::pair<double, double>> vertices;
+      for (int i = 0; i < nvert; i++) {
+        double vx, vy;
+        iss >> vx >> vy;
+        vertices.emplace_back(vx, vy);
+      }      std::string word;
+      iss >> word;
+      scalar = -1.0;
+      grains.push_back(
+          std::make_unique<BorderGrain>(gid, type, vertices, scalar));
     }
 
-    double scalar = 0.0;
     auto it = scalarData.find(gid);
     if (it != scalarData.end()) {
       scalar = computeProperty(property, it->second);
