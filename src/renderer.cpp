@@ -91,7 +91,7 @@ void Renderer::drawColorbar(cairo_t *cr, double x, double y, double width,
   cairo_save(cr);
 
   // Dibujar la barra de color gradiente
-  cairo_pattern_t *pattern = cairo_pattern_create_linear(x, y, x, y + height);
+  cairo_pattern_t *pattern = cairo_pattern_create_linear(x, y + height, x, y);
 
   // Agregar stops al gradiente
   int num_stops = 256;
