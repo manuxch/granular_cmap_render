@@ -74,7 +74,7 @@ void Renderer::renderToPNG(const std::string &filename,
   double colorbar_y = margin_ + 50;                           // Posición Y
 
   drawColorbar(cr, colorbar_x, colorbar_y, colorbar_width, colorbar_height,
-               valmin_, valmax_, cmap, "Pressure", "MPa");
+               valmin_, valmax_, cmap, "Pressure", "N/m");
 
   // Guardar en archivo
   cairo_surface_write_to_png(surface, filename.c_str());
