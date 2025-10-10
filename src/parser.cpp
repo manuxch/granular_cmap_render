@@ -43,12 +43,14 @@ double Parser::computeProperty(const std::string &property,
     // valores: vx, vy, mass
     if (values.size() >= 3) {
       double vx = values[0], vy = values[1], m = values[2];
-      return 0.5 * m * (vx * vx + vy * vy);
+      return 0.5 * m * (vx * vx + vy * vy) *
+             0.000245; // TODO  Conversión a unidades exp. (m v^2)
     }
   } else if (property == "velocity_norm") {
     if (values.size() >= 2) {
       double vx = values[0], vy = values[1];
-      return std::sqrt(vx * vx + vy * vy);
+      return std::sqrt(vx * vx + vy * vy) *
+             0.4116; // TODO: Factor de conversión a unidades exp. (F/L)
     }
   }
   // valor por defecto
@@ -84,7 +86,8 @@ Parser::readXY(const std::string &filename,
         double vx, vy;
         iss >> vx >> vy;
         vertices.emplace_back(vx, vy);
-      }      std::string word;
+      }
+      std::string word;
       iss >> word;
       scalar = -1.0;
       grains.push_back(
@@ -117,4 +120,3 @@ Parser::readXY(const std::string &filename,
   }
   return grains;
 }
-
