@@ -20,6 +20,7 @@ set(SOURCES
     src/parser.cpp
     src/grain.cpp
     src/renderer.cpp
+    src/histogram_magnitude_2d.cpp
 )
 add_executable(granular_cmap_render ${SOURCES})
 

@@ -13,6 +13,7 @@
 #include "parser.hpp"
 #include "renderer.hpp"
 #include "colormap.hpp"      // viridis(), inferno(), RdYlBu(), ...
+#include "histogram_magnitude_2d.hpp"                             //
 
 namespace fs = std::filesystem;
 
@@ -142,6 +143,12 @@ int main(int argc, char* argv[]) {
     // choose colormap
     Colormap cmap = chooseColormap(cmapName);
 
+    // Cramos el histograma 2d 
+    const int HISTOGRAM_BINS_X = 100;
+    const int HISTOGRAM_BINS_Y = 100;
+    MagnitudeHistogram globalHistogram(HISTOGRAM_BINS_X, HISTOGRAM_BINS_Y, 
+                                    xmin, xmax, ymin, ymax);
+
     // thread pool (num threads = hardware concurrency or 4)
     size_t nthreads = std::thread::hardware_concurrency();
     if (nthreads == 0) nthreads = 4;
@@ -163,7 +170,7 @@ int main(int argc, char* argv[]) {
 
         // enqueue job
         futures.push_back(pool.enqueue([xyFile, sxyFile, outFile, property, width, height, margin, cmap,
-                                        xmin, xmax, ymin, ymax, valmin, valmax]() mutable {
+                                        xmin, xmax, ymin, ymax, valmin, valmax, &globalHistogram]() mutable {
             try {
                 // Check sxy exists
                 if (!fs::exists(sxyFile)) {
@@ -181,6 +188,26 @@ int main(int argc, char* argv[]) {
                     std::cerr << "[WARN] No grains parsed from " << xyFile << "\n";
                     return;
                 }
+                // Recolectar datos para el histograma global
+                std::vector<std::tuple<double, double, double>> frameData;
+                for (const auto &gptr : grains) {
+                    double x, y;
+                    
+                    if (auto circle = dynamic_cast<const CircleGrain*>(gptr.get())) {
+                        x = (circle->xmin() + circle->xmax()) / 2.0;
+                        y = (circle->ymin() + circle->ymax()) / 2.0;
+                    } else if (auto poly = dynamic_cast<const PolygonGrain*>(gptr.get())) {
+                        x = (poly->xmin() + poly->xmax()) / 2.0;
+                        y = (poly->ymin() + poly->ymax()) / 2.0;
+                    } else {
+                        continue;
+                    }
+                    
+                    frameData.emplace_back(x, y, gptr->scalar());
+                }
+            
+                // Agregar datos al histograma global (thread-safe)
+                globalHistogram.addPoints(frameData);
 
                 // Determine vmin/vmax from grains' scalars
                 double vmin =  1e300;
@@ -215,7 +242,20 @@ int main(int argc, char* argv[]) {
             std::cerr << "[ERROR] task exception: " << e.what() << "\n";
         }
     }
+    // Calcular promedios y guardar histograma global
+    globalHistogram.computeAverages();
 
+    // Guardar en formato para matplotlib
+    std::string histogramDataFile = fs::path(outputDir) / "pressure_histogram_data.txt";
+    globalHistogram.saveForMatplotlib(histogramDataFile);
+
+    // También guardar CSV por si acaso
+    std::string histogramCSVFile = fs::path(outputDir) / "pressure_histogram_data.csv";
+    globalHistogram.saveCSV(histogramCSVFile);
+
+    std::cout << "Global pressure histogram saved to:\n";
+    std::cout << "  " << histogramDataFile << " (for matplotlib)\n";
+    std::cout << "  " << histogramCSVFile << " (CSV format)\n";
     std::cout << "All tasks done.\n";
     return 0;
 }
