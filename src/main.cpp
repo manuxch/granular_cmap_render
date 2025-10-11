@@ -144,10 +144,11 @@ int main(int argc, char* argv[]) {
     Colormap cmap = chooseColormap(cmapName);
 
     // Cramos el histograma 2d 
-    const int HISTOGRAM_BINS_X = 100;
-    const int HISTOGRAM_BINS_Y = 100;
-    MagnitudeHistogram globalHistogram(HISTOGRAM_BINS_X, HISTOGRAM_BINS_Y, 
-                                    xmin, xmax, ymin, ymax);
+    // const int HISTOGRAM_BINS_X = 36;
+    // const int HISTOGRAM_BINS_Y = 105;
+    // MagnitudeHistogram globalHistogram(HISTOGRAM_BINS_X, HISTOGRAM_BINS_Y, 
+    //                                 xmin, xmax, ymin, ymax);
+    MagnitudeHistogram globalHistogram(xmin, xmax, ymin, ymax);
 
     // thread pool (num threads = hardware concurrency or 4)
     size_t nthreads = std::thread::hardware_concurrency();

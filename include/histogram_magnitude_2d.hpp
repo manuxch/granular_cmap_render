@@ -9,7 +9,8 @@
 
 class MagnitudeHistogram {
 public:
-    MagnitudeHistogram(int bins_x, int bins_y, double xmin, double xmax, double ymin, double ymax);
+    MagnitudeHistogram(double xmin, double xmax, double ymin, double ymax);
+    // MagnitudeHistogram(int bins_x, int bins_y, double xmin, double xmax, double ymin, double ymax);
     
     // Thread-safe: agregar un punto de datos
     void addPoint(double x, double y, double magnitude);

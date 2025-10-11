@@ -4,16 +4,19 @@
 #include <cmath>
 #include <algorithm>
 
-MagnitudeHistogram::MagnitudeHistogram(int bins_x, int bins_y, 
-                                   double xmin, double xmax, 
-                                   double ymin, double ymax)
-    : bins_x_(bins_x), bins_y_(bins_y)
+// MagnitudeHistogram::MagnitudeHistogram(int bins_x, int bins_y, 
+//                                    double xmin, double xmax, 
+//                                    double ymin, double ymax)
+MagnitudeHistogram::MagnitudeHistogram(double xmin, double xmax, double ymin, double ymax)
+    : bins_x_(xmax - xmin), bins_y_(ymax - ymin)
     , xmin_(xmin), xmax_(xmax), ymin_(ymin), ymax_(ymax)
-    , cell_width_((xmax - xmin) / bins_x)
-    , cell_height_((ymax - ymin) / bins_y)
-    , magnitude_sums_(bins_y, std::vector<double>(bins_x, 0.0))
-    , counts_(bins_y, std::vector<int>(bins_x, 0))
-    , averages_(bins_y, std::vector<double>(bins_x, 0.0)) {
+    , cell_width_(1.0)
+    , cell_height_(1.0)
+    // , cell_width_((xmax - xmin) / bins_x)
+    // , cell_height_((ymax - ymin) / bins_y)
+    , magnitude_sums_(bins_y_, std::vector<double>(bins_x_, 0.0))
+    , counts_(bins_y_, std::vector<int>(bins_x_, 0))
+    , averages_(bins_y_, std::vector<double>(bins_x_, 0.0)) {
 }
 
 void MagnitudeHistogram::addPoint(double x, double y, double magnitude) {
