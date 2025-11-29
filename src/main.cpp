@@ -103,7 +103,11 @@ int main(int argc, char* argv[]) {
                       << "       [--config <file>]\n"
                       << "       [--out <out_dir>] [--width <px>] [--height <px>] [--margin <px>]\n"
                       << "       [--xylimits xmin xmax ymin ymax]\n"
-                      << "       [--valmin <valmin>] [--valmax valmax]\n";
+                      << "       [--valmin <valmin>] [--valmax valmax]\n\n";
+            std::cout << "Property:\n";
+            std::cout << "      - pressure\n";
+            std::cout << "      - kinetic_energy\n";
+            std::cout << "      - velocity_norm\n";
             return 0;
         }
     }
@@ -166,6 +170,8 @@ int main(int argc, char* argv[]) {
         std::string xyFile = path.string();
         std::string base = xyFile.substr(0, xyFile.size() - 3); // remove .xy
         std::string sxyFile = base + ".sxy";
+        if (property=="kinetic_energy" || property=="velocity_norm")
+            sxyFile = base + ".ve";
         std::string filenameOnly = path.filename().string();
         std::string outFile = fs::path(outputDir) / (path.stem().string() + ".png");
 
