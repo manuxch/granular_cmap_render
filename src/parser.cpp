@@ -48,7 +48,7 @@ double Parser::computeProperty(const std::string &property,
     }
   } else if (property == "velocity_norm") {
     if (values.size() >= 2) {
-      double vx = values[4], vy = values[5];
+      double vx = values[3], vy = values[4];
       return std::sqrt(vx * vx + vy * vy) *
              0.2213594; // TODO: Factor de conversión a unidades exp. (F/L)
     }
