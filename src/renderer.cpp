@@ -56,16 +56,25 @@ void Renderer::renderToPNG(const std::string &filename,
     return std::make_pair(sx, sy);
   };
 
-  // Dibujar granos
+  // Fix Bug 3: definir región de clipping = área física [xmin,xmax]×[ymin,ymax]
+  {
+    auto [cx0, cy0] = toScreen(xmin, ymax); // esquina superior izquierda (y físico mayor → y pantalla menor)
+    auto [cx1, cy1] = toScreen(xmax, ymin); // esquina inferior derecha
+    cairo_rectangle(cr, cx0, cy0, cx1 - cx0, cy1 - cy0);
+    cairo_clip(cr);
+  }
+
+  // Dibujar granos (recortados al área definida por --xylimits)
   for (const auto &g : grains) {
     double value = g->scalar();
     std::array<double, 3> col = cmap(value, valmin_, valmax_);
-    // std::array<double, 3> col = cmap(value, vmin, vmax);
 
     cairo_set_source_rgb(cr, col[0], col[1], col[2]);
-    // cairo_set_source_rgb(cr, col.r, col.g, col.b);
     g->render(cr, toScreen, scale);
   }
+
+  // Restaurar clip para que la colorbar no quede recortada
+  cairo_reset_clip(cr);
 
   // Dibujar barra de escala de colores
   double colorbar_width = 30;                           // Ancho de la barra

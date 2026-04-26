@@ -78,26 +78,10 @@ int main(int argc, char* argv[]) {
     double valmin = 0.0;
     double valmax = 1.0;
 
-    // Simple argv parsing
+    // Pasada 1: solo extraer --config / --help antes de leer el archivo de config
     for (int i = 1; i < argc; ++i) {
         std::string a = argv[i];
-        if ((a == "--dir" || a == "-d") && i + 1 < argc) { inputDir = argv[++i]; }
-        else if ((a == "--property" || a == "--prop" || a == "-p") && i + 1 < argc) { property = argv[++i]; }
-        else if ((a == "--cmap") && i + 1 < argc) { cmapName = argv[++i]; }
-        else if ((a == "--config") && i + 1 < argc) { configFile = argv[++i]; }
-        else if ((a == "--out" || a == "--output") && i + 1 < argc) { outputDir = argv[++i]; }
-        else if ((a == "--width") && i + 1 < argc) { width = std::stoi(argv[++i]); }
-        else if ((a == "--height") && i + 1 < argc) { height = std::stoi(argv[++i]); }
-        else if ((a == "--margin") && i + 1 < argc) { margin = std::stod(argv[++i]); }
-        else if ((a == "--valmin") && i + 1 < argc) { valmin = std::stod(argv[++i]); }
-        else if ((a == "--valmax") && i + 1 < argc) { valmax = std::stod(argv[++i]); }
-        else if ((a == "--xylimits" || a == "-xyl") && (i + 4 < argc)) {
-            xmin = std::stod(argv[++i]);
-            xmax = std::stod(argv[++i]);
-            ymin = std::stod(argv[++i]);
-            ymax = std::stod(argv[++i]);
-        }
-        else if ((a == "--help" || a == "-h") || (argc < 1))  {
+        if ((a == "--help" || a == "-h")) {
             std::cout << "Usage: " << argv[0] << " [--dir <input_dir>] [--property <name>]\n"
                       << "       [--cmap <viridis|inferno|RdYlBu|Greens|Reds|winter|autumn|blues|hot>]\n"
                       << "       [--config <file>]\n"
@@ -110,9 +94,10 @@ int main(int argc, char* argv[]) {
             std::cout << "      - velocity_norm\n";
             return 0;
         }
+        if ((a == "--config") && i + 1 < argc) { configFile = argv[++i]; }
     }
 
-    // Read config.txt overriding defaults if present
+    // Pasada 2a: leer config.txt (menor prioridad que argv)
     std::unordered_map<std::string,std::string> cfg;
     readConfigFile(configFile, cfg);
     if (cfg.count("output_dir")) outputDir = cfg["output_dir"];
@@ -127,6 +112,28 @@ int main(int argc, char* argv[]) {
     if (cfg.count("y_max")) ymax = std::stod(cfg["y_max"]);
     if (cfg.count("val_min")) valmin = std::stod(cfg["val_min"]);
     if (cfg.count("val_max")) valmax = std::stod(cfg["val_max"]);
+
+    // Pasada 2b: parsear el resto de argv (mayor prioridad — sobreescribe config)
+    for (int i = 1; i < argc; ++i) {
+        std::string a = argv[i];
+        if ((a == "--dir" || a == "-d") && i + 1 < argc)                    { inputDir  = argv[++i]; }
+        else if ((a == "--property" || a == "--prop" || a == "-p") && i + 1 < argc) { property  = argv[++i]; }
+        else if ((a == "--cmap") && i + 1 < argc)                            { cmapName  = argv[++i]; }
+        else if ((a == "--config") && i + 1 < argc)                          { ++i; /* ya procesado */ }
+        else if ((a == "--out" || a == "--output") && i + 1 < argc)          { outputDir = argv[++i]; }
+        else if ((a == "--width") && i + 1 < argc)                           { width     = std::stoi(argv[++i]); }
+        else if ((a == "--height") && i + 1 < argc)                          { height    = std::stoi(argv[++i]); }
+        else if ((a == "--margin") && i + 1 < argc)                          { margin    = std::stod(argv[++i]); }
+        else if ((a == "--valmin") && i + 1 < argc)                          { valmin    = std::stod(argv[++i]); }
+        else if ((a == "--valmax") && i + 1 < argc)                          { valmax    = std::stod(argv[++i]); }
+        // Fix Bug 1: condición corregida de (i+4 < argc) a (i+4 <= argc)
+        else if ((a == "--xylimits" || a == "-xyl") && (i + 4 <= argc)) {
+            xmin = std::stod(argv[++i]);
+            xmax = std::stod(argv[++i]);
+            ymin = std::stod(argv[++i]);
+            ymax = std::stod(argv[++i]);
+        }
+    }
 
     // Make output dir if needed
     try {
